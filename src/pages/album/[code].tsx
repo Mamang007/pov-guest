@@ -2,7 +2,15 @@ import { useState, useEffect, useRef } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { getFilterLabel } from '@/lib/filters'
-import styles from '@/styles/Gallery.module.css'
+import { VStack } from '@astryxdesign/core/VStack'
+import { HStack } from '@astryxdesign/core/HStack'
+import { Grid } from '@astryxdesign/core/Grid'
+import { Heading } from '@astryxdesign/core/Heading'
+import { Text } from '@astryxdesign/core/Text'
+import { Badge } from '@astryxdesign/core/Badge'
+import { Card } from '@astryxdesign/core/Card'
+import { Center } from '@astryxdesign/core/Center'
+import { Banner } from '@astryxdesign/core/Banner'
 
 interface Room {
   id: string
@@ -122,9 +130,9 @@ export default function AlbumPage() {
           <title>Loading… — POV Guest</title>
           <meta name="viewport" content="width=device-width, initial-scale=1" />
         </Head>
-        <div className={styles.container}>
-          <div className={styles.loading}>Loading…</div>
-        </div>
+        <Center style={{ minHeight: '100vh', padding: '1.5rem' }}>
+          <Text color="secondary">Loading…</Text>
+        </Center>
       </>
     )
   }
@@ -136,9 +144,9 @@ export default function AlbumPage() {
           <title>Gallery — POV Guest</title>
           <meta name="viewport" content="width=device-width, initial-scale=1" />
         </Head>
-        <div className={styles.container}>
-          <div className={styles.errorState}>{error || 'Room not found'}</div>
-        </div>
+        <Center style={{ minHeight: '100vh', padding: '1.5rem' }}>
+          <Banner status="error" title={error || 'Room not found'} />
+        </Center>
       </>
     )
   }
@@ -149,48 +157,47 @@ export default function AlbumPage() {
         <title>{room.name} Gallery — POV Guest</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <div className={styles.container}>
-        <header className={styles.header}>
-          <div className={styles.headerLeft}>
-            <span className={styles.logoText}>POV Guest</span>
-            <span className={styles.roomName}>{room.name}</span>
-          </div>
-          <div className={styles.liveBadge}>
-            <span className={styles.liveDot} />
-            Live
-          </div>
-        </header>
+      <div style={{ maxWidth: 960, margin: '0 auto', padding: '1.5rem' }}>
+        <VStack gap={4}>
+          <HStack justify="between" align="center">
+            <HStack gap={2} align="center">
+              <Heading level={1}>POV Guest</Heading>
+              <Text weight="medium">{room.name}</Text>
+            </HStack>
+            <Badge label="● Live" />
+          </HStack>
 
-        <main className={styles.main}>
           {photos.length === 0 ? (
-            <div className={styles.emptyState}>
-              <p className={styles.emptyStateTitle}>No photos yet</p>
-              <p>Be the first to share a moment!</p>
-            </div>
+            <Card>
+              <VStack gap={1} align="center">
+                <Text weight="semibold">No photos yet</Text>
+                <Text color="secondary">Be the first to share a moment!</Text>
+              </VStack>
+            </Card>
           ) : (
-            <div className={styles.grid}>
+            <Grid columns={{ minWidth: 240 }} gap={3}>
               {photos.map((photo) => (
-                <div key={photo.id} className={styles.photoCard}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    className={styles.photoImage}
-                    src={photo.imageUrl}
-                    alt={`Photo by ${photo.guestName}`}
-                  />
-                  <div className={styles.photoInfo}>
-                    <p className={styles.photoGuestName}>{photo.guestName}</p>
-                    <div className={styles.photoMeta}>
-                      <span className={styles.filterBadge}>
-                        {getFilterLabel(photo.filterApplied)}
-                      </span>
-                      <span className={styles.photoTime}>{formatTime(photo.createdAt)}</span>
-                    </div>
-                  </div>
-                </div>
+                <Card key={photo.id}>
+                  <VStack gap={2}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={photo.imageUrl}
+                      alt={`Photo by ${photo.guestName}`}
+                      style={{ width: '100%', borderRadius: 8, aspectRatio: '4/3', objectFit: 'cover' }}
+                    />
+                    <VStack gap={0.5}>
+                      <Text weight="medium">{photo.guestName}</Text>
+                      <HStack justify="between" align="center">
+                        <Badge label={getFilterLabel(photo.filterApplied)} />
+                        <Text size="sm" color="secondary">{formatTime(photo.createdAt)}</Text>
+                      </HStack>
+                    </VStack>
+                  </VStack>
+                </Card>
               ))}
-            </div>
+            </Grid>
           )}
-        </main>
+        </VStack>
       </div>
     </>
   )
