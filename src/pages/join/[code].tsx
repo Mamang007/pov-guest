@@ -2,7 +2,14 @@ import { useState, useEffect, FormEvent } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { getFilterLabel } from '@/lib/filters'
-import styles from '@/styles/Camera.module.css'
+import { Button } from '@astryxdesign/core/Button'
+import { TextInput } from '@astryxdesign/core/TextInput'
+import { Card } from '@astryxdesign/core/Card'
+import { VStack } from '@astryxdesign/core/VStack'
+import { Heading } from '@astryxdesign/core/Heading'
+import { Text } from '@astryxdesign/core/Text'
+import { Banner } from '@astryxdesign/core/Banner'
+import { Center } from '@astryxdesign/core/Center'
 
 interface Room {
   id: string
@@ -78,9 +85,9 @@ export default function JoinPage() {
           <title>Join Room — POV Guest</title>
           <meta name="viewport" content="width=device-width, initial-scale=1" />
         </Head>
-        <div className={styles.container}>
-          <div className={styles.loading}>Loading…</div>
-        </div>
+        <Center style={{ minHeight: '100vh', padding: '1.5rem' }}>
+          <Text color="secondary">Loading…</Text>
+        </Center>
       </>
     )
   }
@@ -92,12 +99,14 @@ export default function JoinPage() {
           <title>Room Not Found — POV Guest</title>
           <meta name="viewport" content="width=device-width, initial-scale=1" />
         </Head>
-        <div className={styles.container}>
-          <div className={styles.card}>
-            <span className={styles.logoText}>POV Guest</span>
-            <p className={styles.apiError}>{error || 'Room not found'}</p>
-          </div>
-        </div>
+        <Center style={{ minHeight: '100vh', padding: '1.5rem' }}>
+          <Card style={{ width: '100%', maxWidth: 420 }}>
+            <VStack gap={2} align="center">
+              <Heading level={1}>POV Guest</Heading>
+              <Banner status="error" title={error || 'Room not found'} />
+            </VStack>
+          </Card>
+        </Center>
       </>
     )
   }
@@ -108,35 +117,35 @@ export default function JoinPage() {
         <title>Join {room.name} — POV Guest</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <div className={styles.container}>
-        <div className={styles.card}>
-          <div className={styles.logoText}>POV Guest</div>
-          <h1 className={styles.title}>{room.name}</h1>
-          <p className={styles.subtitle}>
-            Filter: {getFilterLabel(room.presetFilter)}
-          </p>
+      <Center style={{ minHeight: '100vh', padding: '1.5rem' }}>
+        <Card style={{ width: '100%', maxWidth: 420 }}>
+          <form onSubmit={handleSubmit} noValidate>
+            <VStack gap={4}>
+              <VStack gap={1} align="center">
+                <Heading level={1}>POV Guest</Heading>
+                <Heading level={2}>{room.name}</Heading>
+                <Text color="secondary">Filter: {getFilterLabel(room.presetFilter)}</Text>
+              </VStack>
 
-          <form className={styles.form} onSubmit={handleSubmit} noValidate>
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="guestName">Display Name</label>
-              <input
-                className={styles.input}
-                id="guestName"
+              <TextInput
+                label="Display Name"
                 type="text"
                 value={guestName}
-                onChange={(e) => setGuestName(e.target.value)}
+                onChange={(val) => setGuestName(val)}
                 placeholder="Enter your name"
-                autoComplete="name"
+                status={nameError ? { type: 'error', message: nameError } : undefined}
               />
-              {nameError && <span className={styles.errorText}>{nameError}</span>}
-            </div>
 
-            <button className={styles.button} type="submit">
-              Enter Room
-            </button>
+              <Button
+                label="Enter Room"
+                variant="primary"
+                type="submit"
+                width="100%"
+              />
+            </VStack>
           </form>
-        </div>
-      </div>
+        </Card>
+      </Center>
     </>
   )
 }

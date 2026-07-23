@@ -2,6 +2,15 @@ import { useState, useEffect, useRef, FormEvent } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { FILTER_PRESETS, getFilterCss, getFilterLabel } from '@/lib/filters'
+import { Button } from '@astryxdesign/core/Button'
+import { VStack } from '@astryxdesign/core/VStack'
+import { HStack } from '@astryxdesign/core/HStack'
+import { Heading } from '@astryxdesign/core/Heading'
+import { Text } from '@astryxdesign/core/Text'
+import { Banner } from '@astryxdesign/core/Banner'
+import { Badge } from '@astryxdesign/core/Badge'
+import { Center } from '@astryxdesign/core/Center'
+import { Card } from '@astryxdesign/core/Card'
 import styles from '@/styles/Camera.module.css'
 
 interface Room {
@@ -191,9 +200,9 @@ export default function RoomPage() {
           <title>Loading… — POV Guest</title>
           <meta name="viewport" content="width=device-width, initial-scale=1" />
         </Head>
-        <div className={styles.container}>
-          <div className={styles.loading}>Loading…</div>
-        </div>
+        <Center style={{ minHeight: '100vh', padding: '1.5rem' }}>
+          <Text color="secondary">Loading…</Text>
+        </Center>
       </>
     )
   }
@@ -205,12 +214,14 @@ export default function RoomPage() {
           <title>Room Not Found — POV Guest</title>
           <meta name="viewport" content="width=device-width, initial-scale=1" />
         </Head>
-        <div className={styles.container}>
-          <div className={styles.card}>
-            <span className={styles.logoText}>POV Guest</span>
-            <p className={styles.apiError}>{roomError || 'Room not found'}</p>
-          </div>
-        </div>
+        <Center style={{ minHeight: '100vh', padding: '1.5rem' }}>
+          <Card style={{ width: '100%', maxWidth: 420 }}>
+            <VStack gap={2} align="center">
+              <Heading level={1}>POV Guest</Heading>
+              <Banner status="error" title={roomError || 'Room not found'} />
+            </VStack>
+          </Card>
+        </Center>
       </>
     )
   }
@@ -221,91 +232,95 @@ export default function RoomPage() {
         <title>{room.name} — POV Guest</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <div className={styles.container}>
-        <div style={{ width: '100%', maxWidth: '500px', margin: '0 auto' }}>
-          <div className={styles.header}>
-            <span className={styles.roomName}>{room.name}</span>
-            {guest && <span className={styles.guestBadge}>{guest}</span>}
-          </div>
+      <div style={{ minHeight: '100vh', padding: '1.5rem' }}>
+        <div style={{ width: '100%', maxWidth: 500, margin: '0 auto' }}>
+          <VStack gap={3}>
+            <HStack justify="between" align="center">
+              <Text weight="semibold">{room.name}</Text>
+              {guest && <Badge label={String(guest)} />}
+            </HStack>
 
-          <div className={styles.cameraContainer}>
-            {cameraError ? (
-              <div className={styles.viewfinder}>
-                <div className={styles.fallbackContainer}>
-                  <p className={styles.fallbackText}>Camera not available. Upload a photo instead.</p>
-                  <button
-                    className={styles.button}
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    Choose File
-                  </button>
-                  <input
-                    ref={fileInputRef}
-                    className={styles.hiddenInput}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileSelect}
+            <div className={styles.cameraContainer}>
+              {cameraError ? (
+                <div className={styles.viewfinder}>
+                  <div className={styles.fallbackContainer}>
+                    <Text color="secondary">Camera not available. Upload a photo instead.</Text>
+                    <Button
+                      label="Choose File"
+                      variant="primary"
+                      onClick={() => fileInputRef.current?.click()}
+                    />
+                    <input
+                      ref={fileInputRef}
+                      style={{ display: 'none' }}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileSelect}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className={styles.viewfinder}>
+                  <video
+                    ref={videoRef}
+                    className={styles.video}
+                    style={{ filter: activeFilterCss }}
+                    data-testid="camera-video"
+                    playsInline
+                    muted
+                    autoPlay
                   />
                 </div>
-              </div>
-            ) : (
-              <div className={styles.viewfinder}>
-                <video
-                  ref={videoRef}
-                  className={styles.video}
-                  style={{ filter: activeFilterCss }}
-                  data-testid="camera-video"
-                  playsInline
-                  muted
-                  autoPlay
-                />
-              </div>
-            )}
-            <canvas ref={canvasRef} style={{ display: 'none' }} />
-          </div>
+              )}
+              <canvas ref={canvasRef} style={{ display: 'none' }} />
+            </div>
 
-          <div className={styles.controls}>
             {!cameraError && (
-              <>
-                <div className={styles.filterToggleRow}>
-                  <span className={styles.filterLabel}>
+              <VStack gap={2}>
+                <HStack justify="between" align="center">
+                  <Text type="supporting" weight="medium">
                     Filter: {filterEnabled ? getFilterLabel(currentFilter) : 'Off'}
-                  </span>
-                  <button
-                    className={`${styles.toggleButton} ${!filterEnabled ? styles.toggleButtonOff : ''}`}
+                  </Text>
+                  <Button
+                    label={filterEnabled ? 'Filter On' : 'Filter Off'}
+                    variant={filterEnabled ? 'primary' : 'secondary'}
+                    size="sm"
                     onClick={toggleFilter}
-                  >
-                    {filterEnabled ? 'Filter On' : 'Filter Off'}
-                  </button>
-                </div>
+                  />
+                </HStack>
 
-                <div className={styles.filterOptions}>
+                <HStack gap={1} wrap="wrap">
                   {CAMERA_FILTERS.map((preset) => (
-                    <button
+                    <Button
                       key={preset.value}
-                      className={`${styles.filterButton} ${filterEnabled && currentFilter === preset.value ? styles.filterButtonActive : ''}`}
+                      label={preset.label}
+                      variant={filterEnabled && currentFilter === preset.value ? 'primary' : 'ghost'}
+                      size="sm"
                       onClick={() => switchFilter(preset.value)}
-                    >
-                      <span className={`${styles.filterSwatch} ${styles[`swatch${preset.label.replace(/\s/g, '')}`]}`} />
-                      {preset.label}
-                    </button>
+                    />
                   ))}
-                </div>
+                </HStack>
 
-                <button
-                  className={styles.captureButton}
-                  onClick={handleCapture}
-                  disabled={capturing || !cameraReady}
-                  aria-label="Capture"
-                >
-                  <span className={styles.captureInner} />
-                </button>
-              </>
+                <Center>
+                  <button
+                    className={styles.captureButton}
+                    onClick={handleCapture}
+                    disabled={capturing || !cameraReady}
+                    aria-label="Capture"
+                  >
+                    <span className={styles.captureInner} />
+                  </button>
+                </Center>
+              </VStack>
             )}
-          </div>
 
-          {uploadMessage && <div className={styles.successMessage}>{uploadMessage}</div>}
-          {uploadError && <div className={styles.apiError}>{uploadError}</div>}
+            {uploadMessage && (
+              <Banner status="success" title={uploadMessage} />
+            )}
+            {uploadError && (
+              <Banner status="error" title={uploadError} />
+            )}
+          </VStack>
         </div>
       </div>
     </>
