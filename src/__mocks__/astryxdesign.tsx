@@ -35,3 +35,11 @@ export const Badge = ({ label, ...props }: any) => <span data-testid="badge">{la
 export const Banner = ({ status, title, ...props }: any) => <div role="alert" data-status={status}>{title}</div>
 export const Center = ({ children, ...props }: any) => <div>{children}</div>
 export const Theme = ({ children, ...props }: any) => <>{children}</>
+export const Dialog = ({ isOpen, onOpenChange, children, ...props }: any) => {
+  if (!isOpen) return null
+  return (
+    <div data-testid="dialog" role="dialog" onClick={() => onOpenChange?.(false)}>
+      <div onClick={(e: any) => e.stopPropagation()}>{children}</div>
+    </div>
+  )
+}

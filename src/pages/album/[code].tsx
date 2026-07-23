@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { getFilterLabel } from '@/lib/filters'
@@ -11,6 +11,8 @@ import { Badge } from '@astryxdesign/core/Badge'
 import { Card } from '@astryxdesign/core/Card'
 import { Center } from '@astryxdesign/core/Center'
 import { Banner } from '@astryxdesign/core/Banner'
+import { Button } from '@astryxdesign/core/Button'
+import { Dialog } from '@astryxdesign/core/Dialog'
 
 interface Room {
   id: string
@@ -39,6 +41,7 @@ export default function AlbumPage() {
   const [photos, setPhotos] = useState<Photo[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const roomRef = useRef<Room | null>(null)
 
   useEffect(() => {
@@ -115,6 +118,28 @@ export default function AlbumPage() {
     }
   }, [code])
 
+  const handlePrev = useCallback(() => {
+    if (selectedIndex === null || selectedIndex <= 0) return
+    setSelectedIndex(selectedIndex - 1)
+  }, [selectedIndex])
+
+  const handleNext = useCallback(() => {
+    if (selectedIndex === null || selectedIndex >= photos.length - 1) return
+    setSelectedIndex(selectedIndex + 1)
+  }, [selectedIndex, photos.length])
+
+  useEffect(() => {
+    if (selectedIndex === null) return
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'ArrowLeft') handlePrev()
+      if (e.key === 'ArrowRight') handleNext()
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selectedIndex, handlePrev, handleNext])
+
   function formatTime(iso: string): string {
     try {
       return new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
@@ -122,6 +147,8 @@ export default function AlbumPage() {
       return ''
     }
   }
+
+  const selectedPhoto = selectedIndex !== null ? photos[selectedIndex] : null
 
   if (loading) {
     return (
@@ -176,14 +203,15 @@ export default function AlbumPage() {
             </Card>
           ) : (
             <Grid columns={{ minWidth: 240 }} gap={3}>
-              {photos.map((photo) => (
+              {photos.map((photo, index) => (
                 <Card key={photo.id}>
                   <VStack gap={2}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={photo.imageUrl}
                       alt={`Photo by ${photo.guestName}`}
-                      style={{ width: '100%', borderRadius: 8, aspectRatio: '4/3', objectFit: 'cover' }}
+                      style={{ width: '100%', borderRadius: 8, aspectRatio: '4/3', objectFit: 'cover', cursor: 'pointer' }}
+                      onClick={() => setSelectedIndex(index)}
                     />
                     <VStack gap={0.5}>
                       <Text weight="medium">{photo.guestName}</Text>
@@ -199,6 +227,58 @@ export default function AlbumPage() {
           )}
         </VStack>
       </div>
+
+      {/* Photo Preview Modal */}
+      <Dialog
+        isOpen={selectedPhoto !== null}
+        onOpenChange={(open) => { if (!open) setSelectedIndex(null) }}
+        width="90vw"
+        maxHeight="90vh"
+      >
+        {selectedPhoto && (
+          <VStack gap={3}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={selectedPhoto.imageUrl}
+              alt={`Photo by ${selectedPhoto.guestName}`}
+              style={{
+                width: '100%',
+                maxHeight: '65vh',
+                objectFit: 'contain',
+                borderRadius: 8,
+              }}
+            />
+            <HStack justify="between" align="center">
+              <VStack gap={0.5}>
+                <Text weight="semibold">{selectedPhoto.guestName}</Text>
+                <HStack gap={1} align="center">
+                  <Badge label={getFilterLabel(selectedPhoto.filterApplied)} />
+                  <Text size="sm" color="secondary">{formatTime(selectedPhoto.createdAt)}</Text>
+                </HStack>
+              </VStack>
+              <HStack gap={1}>
+                <Button
+                  label="←"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handlePrev}
+                  isDisabled={selectedIndex === 0}
+                />
+                <Text size="sm" color="secondary">
+                  {(selectedIndex ?? 0) + 1} / {photos.length}
+                </Text>
+                <Button
+                  label="→"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleNext}
+                  isDisabled={selectedIndex === photos.length - 1}
+                />
+              </HStack>
+            </HStack>
+          </VStack>
+        )}
+      </Dialog>
     </>
   )
 }
