@@ -1,7 +1,16 @@
 import { useState, useEffect, FormEvent } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
-import styles from '@/styles/Dashboard.module.css'
+import { Button } from '@astryxdesign/core/Button'
+import { TextInput } from '@astryxdesign/core/TextInput'
+import { Card } from '@astryxdesign/core/Card'
+import { VStack } from '@astryxdesign/core/VStack'
+import { HStack } from '@astryxdesign/core/HStack'
+import { Grid } from '@astryxdesign/core/Grid'
+import { Heading } from '@astryxdesign/core/Heading'
+import { Text } from '@astryxdesign/core/Text'
+import { Banner } from '@astryxdesign/core/Banner'
+import { Badge } from '@astryxdesign/core/Badge'
 
 interface Room {
   id: string
@@ -12,10 +21,10 @@ interface Room {
 }
 
 const FILTER_PRESETS = [
-  { value: 'retro', label: 'Retro', swatchClass: 'swatchRetro' },
-  { value: 'classic-mono', label: 'Classic Mono', swatchClass: 'swatchClassicMono' },
-  { value: 'warm-film', label: 'Warm Film', swatchClass: 'swatchWarmFilm' },
-  { value: 'cyan-drift', label: 'Cyan Drift', swatchClass: 'swatchCyanDrift' },
+  { value: 'retro', label: 'Retro' },
+  { value: 'classic-mono', label: 'Classic Mono' },
+  { value: 'warm-film', label: 'Warm Film' },
+  { value: 'cyan-drift', label: 'Cyan Drift' },
 ] as const
 
 export default function DashboardPage() {
@@ -157,90 +166,98 @@ export default function DashboardPage() {
         <meta name="description" content="Manage your event rooms" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <div className={styles.container}>
-        <header className={styles.header}>
-          <span className={styles.logoText}>POV Guest</span>
-          <button className={styles.logoutButton} onClick={handleLogout}>
-            Sign Out
-          </button>
-        </header>
+      <div style={{ maxWidth: 960, margin: '0 auto', padding: '1.5rem' }}>
+        <VStack gap={6}>
+          <HStack justify="between" align="center">
+            <Heading level={1}>POV Guest</Heading>
+            <Button label="Sign Out" variant="ghost" onClick={handleLogout} />
+          </HStack>
 
-        <main className={styles.main}>
-          <section className={styles.createSection}>
-            <h2 className={styles.createTitle}>Create a Room</h2>
-            <form className={styles.form} onSubmit={handleCreate} noValidate>
-              <input
-                className={styles.input}
-                id="room-name"
-                type="text"
-                value={roomName}
-                onChange={(e) => setRoomName(e.target.value)}
-                placeholder="e.g. John & Jane's Wedding"
-                aria-label="Room Name"
-              />
-              {nameError && <span className={styles.errorText}>{nameError}</span>}
+          <Card>
+            <form onSubmit={handleCreate} noValidate>
+              <VStack gap={3}>
+                <Heading level={2}>Create a Room</Heading>
 
-              <div className={styles.filterGroup}>
-                <span className={styles.filterLabel}>Filter Preset</span>
-                <div className={styles.filterOptions}>
-                  {FILTER_PRESETS.map((preset) => (
-                    <button
-                      key={preset.value}
-                      type="button"
-                      className={`${styles.filterButton} ${selectedFilter === preset.value ? styles.filterButtonActive : ''}`}
-                      onClick={() => setSelectedFilter(preset.value)}
-                    >
-                      <span className={`${styles.filterSwatch} ${styles[preset.swatchClass]}`} />
-                      {preset.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+                <TextInput
+                  label="Room Name"
+                  type="text"
+                  value={roomName}
+                  onChange={(val) => setRoomName(val)}
+                  placeholder="e.g. John & Jane's Wedding"
+                  status={nameError ? { type: 'error', message: nameError } : undefined}
+                />
 
-              {createError && <div className={styles.apiError}>{createError}</div>}
+                <VStack gap={1}>
+                  <Text weight="medium">Filter Preset</Text>
+                  <HStack gap={2} wrap="wrap">
+                    {FILTER_PRESETS.map((preset) => (
+                      <Button
+                        key={preset.value}
+                        label={preset.label}
+                        variant={selectedFilter === preset.value ? 'primary' : 'secondary'}
+                        size="sm"
+                        onClick={() => setSelectedFilter(preset.value)}
+                      />
+                    ))}
+                  </HStack>
+                </VStack>
 
-              <button className={styles.createButton} type="submit" disabled={creating}>
-                {creating ? 'Creating…' : 'Create Room'}
-              </button>
+                {createError && (
+                  <Banner status="error" title={createError} />
+                )}
+
+                <Button
+                  label={creating ? 'Creating…' : 'Create Room'}
+                  variant="primary"
+                  type="submit"
+                  isLoading={creating}
+                />
+              </VStack>
             </form>
-          </section>
+          </Card>
 
-          <h2 className={styles.sectionTitle}>Your Rooms</h2>
+          <VStack gap={3}>
+            <Heading level={2}>Your Rooms</Heading>
 
-          {loading && <p className={styles.loading}>Loading…</p>}
+            {loading && <Text color="secondary">Loading…</Text>}
 
-          {fetchError && <p className={styles.loading}>{fetchError}</p>}
+            {fetchError && <Banner status="error" title={fetchError} />}
 
-          {!loading && !fetchError && rooms.length === 0 && (
-            <div className={styles.emptyState}>
-              <p className={styles.emptyStateTitle}>No rooms yet</p>
-              <p>Create your first room above to get started.</p>
-            </div>
-          )}
+            {!loading && !fetchError && rooms.length === 0 && (
+              <Card>
+                <VStack gap={1} align="center">
+                  <Text weight="semibold">No rooms yet</Text>
+                  <Text color="secondary">Create your first room above to get started.</Text>
+                </VStack>
+              </Card>
+            )}
 
-          {!loading && !fetchError && rooms.length > 0 && (
-            <div className={styles.roomsGrid}>
-              {rooms.map((room) => (
-                <div key={room.id} className={styles.roomCard}>
-                  <div className={styles.roomHeader}>
-                    <h3 className={styles.roomName}>{room.name}</h3>
-                    <span className={styles.filterBadge}>{room.presetFilter}</span>
-                  </div>
-                  <p className={styles.roomCode}>Code: {room.code}</p>
-                  <div className={styles.qrContainer}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      className={styles.qrImage}
-                      src={getQrUrl(room.code)}
-                      alt="QR Code"
-                    />
-                  </div>
-                  <p className={styles.roomDate}>Created {formatDate(room.createdAt)}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </main>
+            {!loading && !fetchError && rooms.length > 0 && (
+              <Grid columns={{ minWidth: 280 }} gap={3}>
+                {rooms.map((room) => (
+                  <Card key={room.id}>
+                    <VStack gap={2}>
+                      <HStack justify="between" align="center">
+                        <Heading level={3}>{room.name}</Heading>
+                        <Badge label={room.presetFilter} />
+                      </HStack>
+                      <Text color="secondary" size="sm">Code: {room.code}</Text>
+                      <div style={{ textAlign: 'center' }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={getQrUrl(room.code)}
+                          alt="QR Code"
+                          style={{ width: 160, height: 160, borderRadius: 8 }}
+                        />
+                      </div>
+                      <Text color="secondary" size="sm">Created {formatDate(room.createdAt)}</Text>
+                    </VStack>
+                  </Card>
+                ))}
+              </Grid>
+            )}
+          </VStack>
+        </VStack>
       </div>
     </>
   )
