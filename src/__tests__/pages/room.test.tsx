@@ -13,6 +13,7 @@ jest.mock('next/head', () => ({
 import RoomPage from '@/pages/room/[code]'
 
 const mockPush = jest.fn()
+const mockReplace = jest.fn()
 const mockStream = { getTracks: () => [{ stop: jest.fn() }] }
 
 const mockRoom = {
@@ -51,8 +52,26 @@ function renderPage(code = 'john-jane-001', guest = 'Alice') {
   ;(useRouter as jest.Mock).mockReturnValue({
     query: { code, guest },
     push: mockPush,
+    replace: mockReplace,
+    isReady: true,
   })
   return render(<RoomPage />)
+}
+
+function mockRoomAndPhotosFetch(photos: unknown[] = []) {
+  ;(global.fetch as jest.Mock).mockImplementation((url: string) => {
+    if (url.includes('/photos')) {
+      return Promise.resolve({ ok: true, status: 200, json: async () => ({ photos }) })
+    }
+    return Promise.resolve({ ok: true, status: 200, json: async () => mockRoom })
+  })
+}
+
+async function openCamera() {
+  await waitFor(() => {
+    expect(screen.getByRole('button', { name: /take a photo/i })).toBeInTheDocument()
+  })
+  fireEvent.click(screen.getByRole('button', { name: /take a photo/i }))
 }
 
 async function waitForCameraReady() {
@@ -76,14 +95,6 @@ describe('Room Camera Page (/room/[code])', () => {
     global.fetch = originalFetch
   })
 
-  function mockRoomFetch() {
-    ;(global.fetch as jest.Mock).mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => mockRoom,
-    })
-  }
-
   it('should show loading state initially', () => {
     ;(global.fetch as jest.Mock).mockReturnValue(new Promise(() => {}))
     renderPage()
@@ -91,7 +102,7 @@ describe('Room Camera Page (/room/[code])', () => {
   })
 
   it('should fetch room details on mount', async () => {
-    mockRoomFetch()
+    mockRoomAndPhotosFetch()
     renderPage()
 
     await waitFor(() => {
@@ -100,7 +111,7 @@ describe('Room Camera Page (/room/[code])', () => {
   })
 
   it('should display room name after loading', async () => {
-    mockRoomFetch()
+    mockRoomAndPhotosFetch()
     renderPage()
 
     await waitFor(() => {
@@ -108,8 +119,8 @@ describe('Room Camera Page (/room/[code])', () => {
     })
   })
 
-  it('should display guest name badge', async () => {
-    mockRoomFetch()
+  it('should display guest name', async () => {
+    mockRoomAndPhotosFetch()
     renderPage()
 
     await waitFor(() => {
@@ -117,27 +128,54 @@ describe('Room Camera Page (/room/[code])', () => {
     })
   })
 
-  it('should request camera access after room loads', async () => {
-    mockRoomFetch()
+  it('should redirect to join page if no guest name', () => {
+    ;(useRouter as jest.Mock).mockReturnValue({
+      query: { code: 'john-jane-001' },
+      push: mockPush,
+      replace: mockReplace,
+      isReady: true,
+    })
+    ;(global.fetch as jest.Mock).mockReturnValue(new Promise(() => {}))
+    render(<RoomPage />)
+
+    expect(mockReplace).toHaveBeenCalledWith('/join/john-jane-001')
+  })
+
+  it('should show gallery view by default with Take a Photo button', async () => {
+    mockRoomAndPhotosFetch()
     renderPage()
 
     await waitFor(() => {
-      expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledWith({ video: true })
+      expect(screen.getByRole('button', { name: /take a photo/i })).toBeInTheDocument()
+    })
+  })
+
+  it('should request camera access after opening camera', async () => {
+    mockRoomAndPhotosFetch()
+    renderPage()
+
+    await openCamera()
+
+    await waitFor(() => {
+      expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalled()
     })
   })
 
   it('should show video element as viewfinder', async () => {
-    mockRoomFetch()
+    mockRoomAndPhotosFetch()
     renderPage()
 
+    await openCamera()
     await waitForCameraReady()
     expect(screen.getByTestId('camera-video')).toBeInTheDocument()
   })
 
   it('should show file selector fallback when camera is unavailable', async () => {
     ;(navigator.mediaDevices.getUserMedia as jest.Mock).mockRejectedValue(new Error('Camera denied'))
-    mockRoomFetch()
+    mockRoomAndPhotosFetch()
     renderPage()
+
+    await openCamera()
 
     await waitFor(() => {
       expect(screen.getByText(/camera not available/i)).toBeInTheDocument()
@@ -145,17 +183,19 @@ describe('Room Camera Page (/room/[code])', () => {
   })
 
   it('should show filter toggle button', async () => {
-    mockRoomFetch()
+    mockRoomAndPhotosFetch()
     renderPage()
 
+    await openCamera()
     await waitForCameraReady()
     expect(screen.getByRole('button', { name: /^filter (on|off)$/i })).toBeInTheDocument()
   })
 
   it('should show filter switcher buttons', async () => {
-    mockRoomFetch()
+    mockRoomAndPhotosFetch()
     renderPage()
 
+    await openCamera()
     await waitForCameraReady()
     expect(screen.getByRole('button', { name: /^retro$/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /classic.?mono/i })).toBeInTheDocument()
@@ -164,9 +204,10 @@ describe('Room Camera Page (/room/[code])', () => {
   })
 
   it('should toggle filter off when toggle button clicked', async () => {
-    mockRoomFetch()
+    mockRoomAndPhotosFetch()
     renderPage()
 
+    await openCamera()
     await waitForCameraReady()
     const video = screen.getByTestId('camera-video') as HTMLVideoElement
     expect(video.style.filter).not.toBe('none')
@@ -177,9 +218,10 @@ describe('Room Camera Page (/room/[code])', () => {
   })
 
   it('should switch filter when a different filter button is clicked', async () => {
-    mockRoomFetch()
+    mockRoomAndPhotosFetch()
     renderPage()
 
+    await openCamera()
     await waitForCameraReady()
     fireEvent.click(screen.getByRole('button', { name: /cyan.?drift/i }))
 
@@ -188,20 +230,29 @@ describe('Room Camera Page (/room/[code])', () => {
   })
 
   it('should have a capture button', async () => {
-    mockRoomFetch()
+    mockRoomAndPhotosFetch()
     renderPage()
 
+    await openCamera()
     await waitForCameraReady()
     expect(screen.getByRole('button', { name: /capture/i })).toBeInTheDocument()
   })
 
   it('should upload photo on capture', async () => {
     ;(global.fetch as jest.Mock)
-      .mockResolvedValueOnce({ ok: true, status: 200, json: async () => mockRoom })
-      .mockResolvedValueOnce({ ok: true, status: 201, json: async () => ({ photo: { id: 'p1', imageUrl: '/uploads/test.jpg', guestName: 'Alice', filterApplied: 'retro' } }) })
+      .mockImplementation((url: string) => {
+        if (url.includes('/photos') && !url.includes('upload')) {
+          return Promise.resolve({ ok: true, status: 200, json: async () => ({ photos: [] }) })
+        }
+        if (url.includes('/upload')) {
+          return Promise.resolve({ ok: true, status: 201, json: async () => ({ photo: { id: 'p1', imageUrl: '/uploads/test.jpg', guestName: 'Alice', filterApplied: 'retro' } }) })
+        }
+        return Promise.resolve({ ok: true, status: 200, json: async () => mockRoom })
+      })
 
     renderPage()
 
+    await openCamera()
     await waitForCameraReady()
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /capture/i })).not.toBeDisabled()
@@ -218,11 +269,19 @@ describe('Room Camera Page (/room/[code])', () => {
 
   it('should show success message after upload', async () => {
     ;(global.fetch as jest.Mock)
-      .mockResolvedValueOnce({ ok: true, status: 200, json: async () => mockRoom })
-      .mockResolvedValueOnce({ ok: true, status: 201, json: async () => ({ photo: { id: 'p1', imageUrl: '/uploads/test.jpg', guestName: 'Alice', filterApplied: 'retro' } }) })
+      .mockImplementation((url: string) => {
+        if (url.includes('/photos') && !url.includes('upload')) {
+          return Promise.resolve({ ok: true, status: 200, json: async () => ({ photos: [] }) })
+        }
+        if (url.includes('/upload')) {
+          return Promise.resolve({ ok: true, status: 201, json: async () => ({ photo: { id: 'p1', imageUrl: '/uploads/test.jpg', guestName: 'Alice', filterApplied: 'retro' } }) })
+        }
+        return Promise.resolve({ ok: true, status: 200, json: async () => mockRoom })
+      })
 
     renderPage()
 
+    await openCamera()
     await waitForCameraReady()
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /capture/i })).not.toBeDisabled()
@@ -237,11 +296,19 @@ describe('Room Camera Page (/room/[code])', () => {
 
   it('should show error message when upload fails', async () => {
     ;(global.fetch as jest.Mock)
-      .mockResolvedValueOnce({ ok: true, status: 200, json: async () => mockRoom })
-      .mockResolvedValueOnce({ ok: false, status: 500, json: async () => ({ error: 'Upload failed' }) })
+      .mockImplementation((url: string) => {
+        if (url.includes('/photos') && !url.includes('upload')) {
+          return Promise.resolve({ ok: true, status: 200, json: async () => ({ photos: [] }) })
+        }
+        if (url.includes('/upload')) {
+          return Promise.resolve({ ok: false, status: 500, json: async () => ({ error: 'Upload failed' }) })
+        }
+        return Promise.resolve({ ok: true, status: 200, json: async () => mockRoom })
+      })
 
     renderPage()
 
+    await openCamera()
     await waitForCameraReady()
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /capture/i })).not.toBeDisabled()
