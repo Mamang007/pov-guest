@@ -19,9 +19,9 @@ describe('Home Page', () => {
     expect(heading).toHaveTextContent(/POV Guest/i)
   })
 
-  it('renders sign in and create account buttons', () => {
+  it('renders create account and sign in buttons', () => {
     render(<Home />)
-    expect(screen.getByRole('button', { name: /Host Sign In/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Create Account/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Sign In/i })).toBeInTheDocument()
   })
 })
