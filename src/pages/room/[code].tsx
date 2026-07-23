@@ -417,9 +417,14 @@ export default function RoomPage() {
                   {guest && `Hi, ${guest}!`} • Filter: {getFilterLabel(room.presetFilter)}
                 </Text>
               </VStack>
-              <Link href={`/join/${code}`}>
-                <Button label="← Leave" variant="ghost" size="sm" />
-              </Link>
+              <HStack gap={1}>
+                <Link href={`/album/${code}`}>
+                  <Button label="Album" variant="secondary" size="sm" />
+                </Link>
+                <Link href={`/join/${code}`}>
+                  <Button label="← Leave" variant="ghost" size="sm" />
+                </Link>
+              </HStack>
             </HStack>
 
             {photos.length === 0 ? (
