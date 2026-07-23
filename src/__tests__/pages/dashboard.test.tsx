@@ -197,9 +197,9 @@ describe('Dashboard Page', () => {
     renderPage()
 
     await waitFor(() => {
-      expect(screen.getByText(/john-jane-001/i)).toBeInTheDocument()
+      expect(screen.getByText(/Code: john-jane-001/i)).toBeInTheDocument()
     })
-    expect(screen.getByText(/birthday-002/i)).toBeInTheDocument()
+    expect(screen.getByText(/Code: birthday-002/i)).toBeInTheDocument()
   })
 
   it('should show empty state when no rooms exist', async () => {

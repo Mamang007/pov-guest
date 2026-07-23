@@ -250,6 +250,20 @@ export default function DashboardPage() {
                           style={{ width: 160, height: 160, borderRadius: 8 }}
                         />
                       </div>
+                      <HStack gap={1} align="center">
+                        <Text size="sm" color="secondary" style={{ wordBreak: 'break-all' }}>
+                          {typeof window !== 'undefined' ? `${window.location.origin}/join/${room.code}` : `/join/${room.code}`}
+                        </Text>
+                        <Button
+                          label="Copy"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            const url = `${window.location.origin}/join/${room.code}`
+                            navigator.clipboard.writeText(url)
+                          }}
+                        />
+                      </HStack>
                       <Text color="secondary" size="sm">Created {formatDate(room.createdAt)}</Text>
                     </VStack>
                   </Card>
