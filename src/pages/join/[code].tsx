@@ -1,5 +1,6 @@
 import { useState, useEffect, FormEvent } from 'react'
 import Head from 'next/head'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { getFilterLabel } from '@/lib/filters'
 import { Button } from '@astryxdesign/core/Button'
@@ -9,7 +10,6 @@ import { VStack } from '@astryxdesign/core/VStack'
 import { Heading } from '@astryxdesign/core/Heading'
 import { Text } from '@astryxdesign/core/Text'
 import { Banner } from '@astryxdesign/core/Banner'
-import { Center } from '@astryxdesign/core/Center'
 
 interface Room {
   id: string
@@ -85,9 +85,9 @@ export default function JoinPage() {
           <title>Join Room — POV Guest</title>
           <meta name="viewport" content="width=device-width, initial-scale=1" />
         </Head>
-        <Center style={{ minHeight: '100vh', padding: '1.5rem' }}>
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
           <Text color="secondary">Loading…</Text>
-        </Center>
+        </div>
       </>
     )
   }
@@ -99,14 +99,17 @@ export default function JoinPage() {
           <title>Room Not Found — POV Guest</title>
           <meta name="viewport" content="width=device-width, initial-scale=1" />
         </Head>
-        <Center style={{ minHeight: '100vh', padding: '1.5rem' }}>
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
           <Card style={{ width: '100%', maxWidth: 420 }}>
             <VStack gap={2} align="center">
               <Heading level={1}>POV Guest</Heading>
               <Banner status="error" title={error || 'Room not found'} />
+              <Link href="/">
+                <Button label="← Back to Home" variant="ghost" />
+              </Link>
             </VStack>
           </Card>
-        </Center>
+        </div>
       </>
     )
   }
@@ -117,8 +120,27 @@ export default function JoinPage() {
         <title>Join {room.name} — POV Guest</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <Center style={{ minHeight: '100vh', padding: '1.5rem' }}>
-        <Card style={{ width: '100%', maxWidth: 420 }}>
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1.5rem',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        {/* Warm event background */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: 'url(https://images.unsplash.com/photo-1519741497674-611481863552?w=1920&q=80)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          filter: 'brightness(0.35)',
+          zIndex: 0,
+        }} />
+
+        <Card style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 420 }}>
           <form onSubmit={handleSubmit} noValidate>
             <VStack gap={4}>
               <VStack gap={1} align="center">
@@ -142,10 +164,14 @@ export default function JoinPage() {
                 type="submit"
                 width="100%"
               />
+
+              <Link href="/">
+                <Button label="← Back" variant="ghost" width="100%" />
+              </Link>
             </VStack>
           </form>
         </Card>
-      </Center>
+      </div>
     </>
   )
 }
