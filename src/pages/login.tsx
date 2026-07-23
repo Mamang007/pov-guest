@@ -2,7 +2,14 @@ import { useState, FormEvent } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import styles from '@/styles/Auth.module.css'
+import { Button } from '@astryxdesign/core/Button'
+import { TextInput } from '@astryxdesign/core/TextInput'
+import { Card } from '@astryxdesign/core/Card'
+import { VStack } from '@astryxdesign/core/VStack'
+import { Heading } from '@astryxdesign/core/Heading'
+import { Text } from '@astryxdesign/core/Text'
+import { Banner } from '@astryxdesign/core/Banner'
+import { Center } from '@astryxdesign/core/Center'
 
 interface FormErrors {
   email?: string
@@ -71,62 +78,56 @@ export default function LoginPage() {
         <meta name="description" content="Sign in to your host account" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <div className={styles.container}>
-        <div className={styles.card}>
-          <div className={styles.logo}>
-            <span className={styles.logoText}>POV Guest</span>
-          </div>
-          <h1 className={styles.title}>Welcome back</h1>
-          <p className={styles.subtitle}>Sign in to manage your rooms</p>
+      <Center style={{ minHeight: '100vh', padding: '1.5rem' }}>
+        <Card style={{ width: '100%', maxWidth: 420 }}>
+          <form onSubmit={handleSubmit} noValidate>
+            <VStack gap={4}>
+              <VStack gap={1} align="center">
+                <Heading level={1}>POV Guest</Heading>
+                <Heading level={3}>Welcome back</Heading>
+                <Text color="secondary">Sign in to manage your rooms</Text>
+              </VStack>
 
-          <form className={styles.form} onSubmit={handleSubmit} noValidate>
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="email">Email</label>
-              <input
-                className={`${styles.input} ${errors.email ? styles.inputError : ''}`}
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="jane@example.com"
-                autoComplete="email"
+              <VStack gap={3}>
+                <TextInput
+                  label="Email"
+                  type="email"
+                  value={email}
+                  onChange={(val) => setEmail(val)}
+                  placeholder="jane@example.com"
+                  status={errors.email ? { type: 'error', message: errors.email } : undefined}
+                />
+
+                <TextInput
+                  label="Password"
+                  type="password"
+                  value={password}
+                  onChange={(val) => setPassword(val)}
+                  placeholder="Enter your password"
+                  status={errors.password ? { type: 'error', message: errors.password } : undefined}
+                />
+              </VStack>
+
+              {apiError && (
+                <Banner status="error" title={apiError} />
+              )}
+
+              <Button
+                label={loading ? 'Signing in…' : 'Sign In'}
+                variant="primary"
+                type="submit"
+                isLoading={loading}
+                width="100%"
               />
-              {errors.email && <span className={styles.errorText}>{errors.email}</span>}
-            </div>
 
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="password">Password</label>
-              <input
-                className={`${styles.input} ${errors.password ? styles.inputError : ''}`}
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                autoComplete="current-password"
-              />
-              {errors.password && <span className={styles.errorText}>{errors.password}</span>}
-            </div>
-
-            {apiError && <div className={styles.apiError}>{apiError}</div>}
-
-            <button
-              className={styles.submitButton}
-              type="submit"
-              disabled={loading}
-            >
-              {loading ? 'Signing in…' : 'Sign In'}
-            </button>
+              <Text size="sm" color="secondary" justify="center">
+                Don&apos;t have an account?{' '}
+                <Link href="/register">Sign up</Link>
+              </Text>
+            </VStack>
           </form>
-
-          <p className={styles.footer}>
-            Don&apos;t have an account?{' '}
-            <Link href="/register" className={styles.footerLink}>
-              Sign up
-            </Link>
-          </p>
-        </div>
-      </div>
+        </Card>
+      </Center>
     </>
   )
 }
