@@ -12,10 +12,16 @@ jest.mock('next/head', () => {
 })
 
 describe('Home Page', () => {
-  it('renders without crashing and displays getting started message', () => {
+  it('renders without crashing and displays POV Guest heading', () => {
     render(<Home />)
     const heading = screen.getByRole('heading', { level: 1 })
     expect(heading).toBeInTheDocument()
-    expect(heading).toHaveTextContent(/To get started, edit the index.tsx file/i)
+    expect(heading).toHaveTextContent(/POV Guest/i)
+  })
+
+  it('renders sign in and create account buttons', () => {
+    render(<Home />)
+    expect(screen.getByRole('button', { name: /Host Sign In/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Create Account/i })).toBeInTheDocument()
   })
 })

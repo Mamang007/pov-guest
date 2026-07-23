@@ -137,14 +137,13 @@ describe('Dashboard Page', () => {
     })
 
     fireEvent.change(screen.getByLabelText(/room name/i), { target: { value: 'New Event' } })
-    fireEvent.click(screen.getByRole('button', { name: /cyan.?drift/i }))
     fireEvent.click(screen.getByRole('button', { name: /create room/i }))
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith('/api/rooms', expect.objectContaining({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: 'New Event', presetFilter: 'cyan-drift' }),
+        body: JSON.stringify({ name: 'New Event', presetFilter: 'retro' }),
       }))
     })
   })

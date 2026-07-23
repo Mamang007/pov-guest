@@ -15,6 +15,9 @@ const config: Config = {
   moduleNameMapper: {
     // Handle module aliases
     '^@/(.*)$': '<rootDir>/src/$1',
+    // Mock Astryx design system components for tests
+    '^@astryxdesign/core/(.*)$': '<rootDir>/src/__mocks__/astryxdesign.tsx',
+    '^@astryxdesign/theme-neutral$': '<rootDir>/src/__mocks__/astryxdesign-theme.ts',
   },
 }
 
