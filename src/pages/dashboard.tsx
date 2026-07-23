@@ -1,5 +1,6 @@
 import { useState, useEffect, FormEvent } from 'react'
 import Head from 'next/head'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { Button } from '@astryxdesign/core/Button'
 import { TextInput } from '@astryxdesign/core/TextInput'
@@ -265,6 +266,9 @@ export default function DashboardPage() {
                         />
                       </HStack>
                       <Text color="secondary" size="sm">Created {formatDate(room.createdAt)}</Text>
+                      <Link href={`/album/${room.code}`}>
+                        <Button label="View Album" variant="secondary" width="100%" />
+                      </Link>
                     </VStack>
                   </Card>
                 ))}
