@@ -9,7 +9,6 @@ import { VStack } from '@astryxdesign/core/VStack'
 import { Heading } from '@astryxdesign/core/Heading'
 import { Text } from '@astryxdesign/core/Text'
 import { Banner } from '@astryxdesign/core/Banner'
-import { Center } from '@astryxdesign/core/Center'
 
 interface FormErrors {
   email?: string
@@ -78,14 +77,33 @@ export default function LoginPage() {
         <meta name="description" content="Sign in to your host account" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <Center style={{ minHeight: '100vh', padding: '1.5rem' }}>
-        <Card style={{ width: '100%', maxWidth: 420 }}>
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1.5rem',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        {/* Warm event background */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: 'url(https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=1920&q=80)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          filter: 'brightness(0.35)',
+          zIndex: 0,
+        }} />
+
+        <Card style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 420 }}>
           <form onSubmit={handleSubmit} noValidate>
             <VStack gap={4}>
               <VStack gap={1} align="center">
                 <Heading level={1}>POV Guest</Heading>
                 <Heading level={3}>Welcome back</Heading>
-                <Text color="secondary">Sign in to manage your rooms</Text>
+                <Text color="secondary">Sign in to manage your event rooms</Text>
               </VStack>
 
               <VStack gap={3}>
@@ -127,7 +145,7 @@ export default function LoginPage() {
             </VStack>
           </form>
         </Card>
-      </Center>
+      </div>
     </>
   )
 }
