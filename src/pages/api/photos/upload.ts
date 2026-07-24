@@ -46,7 +46,7 @@ export default async function handler(
 
   const ext = file.name.split('.').pop() || 'jpg'
   const filename = `${randomUUID()}.${ext}`
-  const uploadDir = join(process.cwd(), 'public', 'uploads')
+  const uploadDir = process.env.UPLOAD_DIR || '/var/data/pov-guest/uploads'
 
   try {
     await mkdir(uploadDir, { recursive: true })
@@ -56,7 +56,7 @@ export default async function handler(
     return res.status(500).json({ error: 'Failed to save file' })
   }
 
-  const imageUrl = `/uploads/${filename}`
+  const imageUrl = `/api/uploads/${filename}`
 
   try {
     const [photo] = await db
