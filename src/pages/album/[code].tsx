@@ -188,6 +188,12 @@ export default function AlbumPage() {
         <VStack gap={4}>
           <HStack justify="between" align="center">
             <HStack gap={2} align="center">
+              <Button
+                label="← Back"
+                variant="ghost"
+                size="sm"
+                onClick={() => router.back()}
+              />
               <Heading level={1}>POV Guest</Heading>
               <Text weight="medium">{room.name}</Text>
             </HStack>
