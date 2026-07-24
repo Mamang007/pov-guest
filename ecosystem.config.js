@@ -9,6 +9,7 @@ module.exports = {
         NODE_ENV: 'production',
         PORT: '3000',
         UPLOAD_DIR: '/var/data/pov-guest/uploads',
+        DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/pov_guest',
       },
       instances: 1,
       autorestart: true,
